@@ -39,8 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_web3_auth',
-
+    
     # Modules
     'corsheaders',
     'rest_framework',
