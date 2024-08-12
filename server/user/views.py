@@ -4,7 +4,8 @@ from django.middleware import csrf
 from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
 from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
 from user import serializers, models
-
+from web3 import Web3
+import requests
 
 def get_user_tokens(user):
     refresh = tokens.RefreshToken.for_user(user)
@@ -117,6 +118,23 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
         response["X-CSRFToken"] = request.COOKIES.get("csrftoken")
         return super().finalize_response(request, response, *args, **kwargs)
 
+def get_eth_balance(address):
+    url = f"https://api.etherscan.io/api"
+    params = {
+        "module": "account",
+        "action": "balance",
+        "address": address,
+        "tag": "latest",
+        "apikey": settings.ETHERSCAN_API_KEY
+    }
+    response = requests.get(url, params=params)
+    data = response.json()
+    if data["status"] == "1":
+        balance = int(data["result"])
+        return balance
+    else:
+        raise Exception(data["message"])
+
 
 @rest_decorators.api_view(["GET"])
 @rest_decorators.permission_classes([rest_permissions.IsAuthenticated])
@@ -127,4 +145,15 @@ def user(request):
         return response.Response(status_code=404)
 
     serializer = serializers.UserSerializer(user)
-    return response.Response(serializer.data)
+    data = serializer.data
+
+    eth_wallet_address = user.eth_wallet_address
+    if eth_wallet_address:
+        try:
+            balance = get_eth_balance(eth_wallet_address)
+            eth_wallet_balance = Web3.from_wei(balance, 'ether')
+            data['eth_wallet_balance'] = str(eth_wallet_balance)
+        except Exception as e:
+            data['eth_wallet_balance'] = f"Error fetching balance: {str(e)}"
+
+    return response.Response(data)

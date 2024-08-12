@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    'django_web3_auth',
+
     # Modules
     'corsheaders',
     'rest_framework',
@@ -207,3 +208,5 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'user.User'
+
+ETHERSCAN_API_KEY = 'J26T62AQDN3S2K8K4CDMGTSBU6DSMPZ6RU'

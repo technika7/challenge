@@ -1,11 +1,13 @@
 from rest_framework import serializers
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
 
     password2 = serializers.CharField(style={"input_type": "password"})
+    eth_wallet_address = serializers.CharField(validators=[RegexValidator(regex=r'^0x[a-fA-F0-9]{40}$')])
 
     class Meta:
         model = get_user_model()
